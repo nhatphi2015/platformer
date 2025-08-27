@@ -1,20 +1,8 @@
 import pygame as pg
 import random
-from plat import *
+from setting import *
+from sprite import *
 
-# Settings
-WIDTH = 600
-HEIGHT = 800
-FPS = 60
-
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-PURPLE = (184, 51, 255)
-ORANGE = (245, 187, 39)
 
 class Game:
     def __init__(self):
@@ -22,13 +10,25 @@ class Game:
         pg.init()
         pg.mixer.init()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
-        pg.display.set_caption("! Platformer Game !")
+        pg.display.set_caption("Jumpy!")
         self.clock = pg.time.Clock()
         self.running = True
 
     def new(self):
         # start a game
         self.all_sprite = pg.sprite.Group()
+        self.platform = pg.sprite.Group()
+        self.player = Player()
+        self.all_sprite.add(self.player)
+        p1 = Platform(0, HEIGHT - 40, WIDTH, 40)
+        self.all_sprite.add(p1)
+        self.platform.add(p1)
+        p2 = Platform(WIDTH / 2 - 50, HEIGHT * 3 / 4, 100, 20)
+        self.all_sprite.add(p2)
+        self.platform.add(p2)
+        p3 = (WIDTH - 50, HEIGHT * 4 / 3, 300, 90)
+        self.all_sprite.add(p3)
+        self.platform.add(p3)
         self.run()
 
     def run(self):
@@ -44,6 +44,10 @@ class Game:
     def update(self):
         # game loop - update
         self.all_sprite.update()
+        hits = pg.sprite.spritecollide(self.player, self.platform, False)
+        if hits:
+            self.player.pos.y = hits[0].rect.top
+            self.player.vel.y = 0
 
     def event(self):
         # game loop - event
