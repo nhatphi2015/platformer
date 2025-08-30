@@ -26,9 +26,6 @@ class Game:
         p2 = Platform(WIDTH / 2 - 50, HEIGHT * 3 / 4, 100, 20)
         self.all_sprite.add(p2)
         self.platform.add(p2)
-        p3 = (WIDTH - 50, HEIGHT * 4 / 3, 300, 90)
-        self.all_sprite.add(p3)
-        self.platform.add(p3)
         self.run()
 
     def run(self):
@@ -45,9 +42,10 @@ class Game:
         # game loop - update
         self.all_sprite.update()
         hits = pg.sprite.spritecollide(self.player, self.platform, False)
-        if hits:
+        if hits and self.player.vel.y > 0:
             self.player.pos.y = hits[0].rect.top
             self.player.vel.y = 0
+            self.player.rect.midbottom = self.player.pos
 
     def event(self):
         # game loop - event
@@ -57,6 +55,9 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    self.player.jump()
 
 
     def draw(self):
