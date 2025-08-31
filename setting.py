@@ -4,11 +4,20 @@ TITLE = "Jumpy!"
 WIDTH = 600
 HEIGHT = 800
 FPS = 60
+FONT_NAME = 'arial'
 
 # Player properties
-PLAYER_ACC = 0.7
-PLAYER_FRICTION = -0.12
+PLAYER_ACC = 0.9
+PLAYER_FRICTION = -0.100
 PLAYER_GRAVITY = 0.8
+PLAYER_JUMP = 55
+
+# Starting platform
+PLATFORM_LIST = [(0, HEIGHT - 40, WIDTH, 40),
+                (WIDTH / 2 - 50, HEIGHT * 3 / 4, 100, 20),
+                (125, HEIGHT - 350, 100,20),
+                (350, 200, 100, 20),
+                (175, 60, 50, 20)]
 
 # Colors
 WHITE = (255, 255, 255)

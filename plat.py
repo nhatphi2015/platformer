@@ -13,19 +13,19 @@ class Game:
         pg.display.set_caption("Jumpy!")
         self.clock = pg.time.Clock()
         self.running = True
+        self.font_name = pg.font.match_font(FONT_NAME)
 
     def new(self):
         # start a game
+        self.score = 0
         self.all_sprite = pg.sprite.Group()
         self.platform = pg.sprite.Group()
-        self.player = Player()
+        self.player = Player(self)
         self.all_sprite.add(self.player)
-        p1 = Platform(0, HEIGHT - 40, WIDTH, 40)
-        self.all_sprite.add(p1)
-        self.platform.add(p1)
-        p2 = Platform(WIDTH / 2 - 50, HEIGHT * 3 / 4, 100, 20)
-        self.all_sprite.add(p2)
-        self.platform.add(p2)
+        for plat in PLATFORM_LIST:
+            p = Platform(*plat)
+            self.all_sprite.add(p)
+            self.platform.add(p)
         self.run()
 
     def run(self):
@@ -41,10 +41,35 @@ class Game:
     def update(self):
         # game loop - update
         self.all_sprite.update()
-        hits = pg.sprite.spritecollide(self.player, self.platform, False)
-        if hits:
-            self.player.pos.y = hits[0].rect.top
-            self.player.vel.y = 0
+        # check if player hit hits - only it falling
+        if self.player.vel.y > 0:
+            hits = pg.sprite.spritecollide(self.player, self.platform, False)
+            if hits:
+                self.player.pos.y = hits[0].rect.top
+                self.player.vel.y = 0
+        # if player reach top 1/4 of screen
+        if self.player.rect.top <= HEIGHT / 4:
+            self.player.pos.y += abs(self.player.vel.y)
+            for plat in self.platform:
+                plat.rect.y += abs(self.player.vel.y)
+                if plat.rect.top >= HEIGHT:
+                    plat.kill()
+                    self.score += 10
+
+        # die!
+        if self.player.rect.bottom > HEIGHT:
+            for sprite in self.all_sprite:
+                sprite.rect.y -= max(self.player.vel.y, 10)
+                if sprite.rect.bottom < 0:
+                    sprite.kill()
+        if len(self.platform) == 0:
+            self.playing = False
+        # spawn new platform to keep same average number
+        while len(self.platform) < 6:
+            width = random.randrange(50, 100)
+            p = Platform(random.randrange(0, WIDTH - width),random.randrange(-75, -50. ),width, 20)
+            self. platform.add(p)
+            self.all_sprite.add(p)
 
     def event(self):
         # game loop - event
@@ -63,6 +88,7 @@ class Game:
         # game loop - draw
         self.screen.fill(BLACK)
         self.all_sprite.draw(self.screen)
+        self.draw_text(str(self.score), 22, WHITE, WIDTH /2, 15)
         # after draw finish - fill the display
         pg.display.flip()
 
@@ -73,6 +99,13 @@ class Game:
     def show_go_screen(self):
         # game over/control
         pass
+
+    def draw_text(self, text, size, color, x, y):
+        font = pg.font.Font(self.font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        self.screen.blit(text_surface)
 
 g = Game()
 g.show_start_screen()
