@@ -1,7 +1,11 @@
+# kidcancode youtoube
+# Jumpy! Platform game
+
 import pygame as pg
 import random
 from setting import *
 from sprite import *
+from os import path
 
 
 class Game:
@@ -14,6 +18,17 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
         self.font_name = pg.font.match_font(FONT_NAME)
+        self.load_data()
+
+    def load_data(self):
+        # load a high score
+        self.dir = path.dirname(__file__)
+        with open(path.join(self.dir, HS_FILE), 'w') as f:
+            try:
+                self.highscore = int(f.read())
+            except:
+                self.highscore = 0
+
 
     def new(self):
         # start a game
@@ -67,8 +82,8 @@ class Game:
         # spawn new platform to keep same average number
         while len(self.platform) < 6:
             width = random.randrange(50, 100)
-            p = Platform(random.randrange(0, WIDTH - width),random.randrange(-75, -50. ),width, 20)
-            self. platform.add(p)
+            p = Platform(random.randrange(0, WIDTH - width),random.randrange(-75, -50),width, 20)
+            self.platform.add(p)
             self.all_sprite.add(p)
 
     def event(self):
@@ -86,7 +101,7 @@ class Game:
 
     def draw(self):
         # game loop - draw
-        self.screen.fill(BLACK)
+        self.screen.fill(LIGHTBLUE)
         self.all_sprite.draw(self.screen)
         self.draw_text(str(self.score), 22, WHITE, WIDTH /2, 15)
         # after draw finish - fill the display
@@ -94,18 +109,48 @@ class Game:
 
     def show_start_screen(self):
         # game over/control
-        pass
+        self.screen.fill(BGCOLOR)
+        self.draw_text(TITLE, 48, WHITE, WIDTH / 2, HEIGHT / 4)
+        self.draw_text("Arrows to move, Space to jump", 22, WHITE, WIDTH / 2, HEIGHT / 2)
+        self.draw_text("Press a key to play", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
+        self.draw_text("High score: " + str(self.highscore), 22, WHITE, WIDTH / 2, 15)
+        pg.display.flip()
+        self.wait_for_key()
 
     def show_go_screen(self):
+        if not self.running:
+            return
         # game over/control
-        pass
+        self.screen.fill(BGCOLOR)
+        self.draw_text("GAME OVER", 48, WHITE, WIDTH / 2, HEIGHT / 4)
+        self.draw_text("Score: " + str(self.score), 22, WHITE, WIDTH / 2, HEIGHT / 2)
+        self.draw_text("Press a key to play again", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
+        if self.score > self.highscore:
+            self.highscore = self.score
+            self.draw_text("NEW HIGH SOCRE!", 22, WHITE, WIDTH / 2, HEIGHT / 2 + 40)
+            with open(path.join(self.dir, HS_FILE), 'w') as f:
+                f.write(str(self.score))
+        else:
+            self.draw_text("High score: " + str(self.highscore), 22, WHITE, WIDTH / 2, HEIGHT / 2 + 40)
+        pg.display.flip()
+        self.wait_for_key()
+
+    def wait_for_key(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                if event.type == pg.KEYUP:
+                    waiting = False
 
     def draw_text(self, text, size, color, x, y):
         font = pg.font.Font(self.font_name, size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
-        self.screen.blit(text_surface)
+        self.screen.blit(text_surface, text_rect )
 
 g = Game()
 g.show_start_screen()
