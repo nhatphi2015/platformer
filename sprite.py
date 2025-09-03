@@ -2,20 +2,40 @@ import pygame as pg
 from setting import *
 vec = pg.math.Vector2
 
-class Player(pg.sprite.Sprite):
+class Spritesheet:
+    # utility class for loading and parsing Spritesheet
+    def __init__(self, filename):
+        self.spritesheet = pg.image.load(filename).convert_alpha()
 
-    def __init__(self):
+    def get_image(self, x, y, width, height):
+        # grab on image out of a larger spritesheet
+        image = pg.Surface((width, height))
+        image.blit(self.spritesheet, (0, 0), (x, y, width, height))
+        image.set_colorkey((0, 0, 0)) 
+        image = pg.transform.scale(image, (width // 2, height // 2))
+        return image
+
+class Player(pg.sprite.Sprite):
+    def __init__(self, game):
+        self.game = game
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.Surface((30, 40))
-        self.image.fill(YELLOW)
+        self.image = self.game.spritesheet.get_image(692, 1667, 120, 132)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2) 
         self.pos = vec(WIDTH / 2, HEIGHT / 2)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
+    def jump(self):
+        # jump only stand on the platform
+        self.rect.x += 1
+        hits = pg.sprite.spritecollide(self, self.game.platform, False)
+        self.rect.x -= 1
+        if hits:
+            self.vel.y = -PLAYER_JUMP
+
     def update(self):
-        self.acc = vec(0, 0.5)
+        self.acc = vec(0, PLAYER_GRAVITY)
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
             self.acc.x = -PLAYER_ACC
