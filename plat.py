@@ -41,7 +41,7 @@ class Game:
         self.player = Player(self)
         self.all_sprite.add(self.player)
         for plat in PLATFORM_LIST:
-            p = Platform(*plat)
+            p = Platform(self, *plat)
             self.all_sprite.add(p)
             self.platform.add(p)
         self.run()
@@ -67,9 +67,9 @@ class Game:
                 self.player.vel.y = 0
         # if player reach top 1/4 of screen
         if self.player.rect.top <= HEIGHT / 4:
-            self.player.pos.y += abs(self.player.vel.y)
+            self.player.pos.y += max(abs(self.player.vel.y), 2)
             for plat in self.platform:
-                plat.rect.y += abs(self.player.vel.y)
+                plat.rect.y += max(abs(self.player.vel.y), 2)
                 if plat.rect.top >= HEIGHT:
                     plat.kill()
                     self.score += 10
@@ -85,7 +85,7 @@ class Game:
         # spawn new platform to keep same average number
         while len(self.platform) < 6:
             width = random.randrange(50, 100)
-            p = Platform(random.randrange(0, WIDTH - width),random.randrange(-75, -50),width, 20)
+            p = Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
             self.platform.add(p)
             self.all_sprite.add(p)
 
