@@ -27,8 +27,8 @@ class Player(pg.sprite.Sprite):
         self.load_image()
         self.image = self.standing_frame[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2) 
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.rect.center = (40, HEIGHT - 10) 
+        self.pos = vec(40, HEIGHT - 10)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -48,9 +48,9 @@ class Player(pg.sprite.Sprite):
 
     def jump(self):
         # jump only stand on the platform
-        self.rect.x += 1
+        self.rect.x += 2
         hits = pg.sprite.spritecollide(self, self.game.platform, False)
-        self.rect.x -= 1
+        self.rect.x -= 2
         if hits:
             self.vel.y = -PLAYER_JUMP
 

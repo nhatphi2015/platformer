@@ -1,6 +1,3 @@
-# kidcancode youtoube
-# Jumpy! Platform game
-
 import pygame as pg
 import random
 from setting import *
@@ -24,13 +21,20 @@ class Game:
         # load a high score
         self.dir = path.dirname(__file__)
         img_dir = path.join(self.dir, 'img')
-        with open(path.join(self.dir, HS_FILE), 'w') as f:
-            try:
+        hs_path = path.join(self.dir, HS_FILE)
+        try:
+            with open(hs_path, 'r') as f:
                 self.highscore = int(f.read())
-            except:
+        except:
+            self.highscore = 0
+            with open(hs_path, 'w') as f:
+                f.write('0')
                 self.highscore = 0
                 # load Spritesheet
                 self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+                # load sound
+                self.sand_dir = path.join(self.dir, 'snd')
+                self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump33.wav'))
 
 
     def new(self):
@@ -100,12 +104,16 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
-
+                    self.jump_sound.play()
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_SPACE:
+                    self.player.jump_cut()
 
     def draw(self):
         # game loop - draw
         self.screen.fill(LIGHTBLUE)
         self.all_sprite.draw(self.screen)
+        self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, WHITE, WIDTH /2, 15)
         # after draw finish - fill the display
         pg.display.flip()
@@ -160,5 +168,5 @@ g.show_start_screen()
 while g.running:
     g.new()
     g.show_go_screen()
-
+ 
 pg.quit()
