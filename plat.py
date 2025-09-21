@@ -20,21 +20,17 @@ class Game:
     def load_data(self):
         # load a high score
         self.dir = path.dirname(__file__)
-        img_dir = path.join(self.dir, 'img')
-        hs_path = path.join(self.dir, HS_FILE)
-        try:
-            with open(hs_path, 'r') as f:
+        with open(path.join(self.dir, HS_FILE), 'r') as f:
+            try:
                 self.highscore = int(f.read())
-        except:
-            self.highscore = 0
-            with open(hs_path, 'w') as f:
-                f.write('0')
+            except:
                 self.highscore = 0
-                # load Spritesheet
-                self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
-                # load sound
-                self.sand_dir = path.join(self.dir, 'snd')
-                self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump33.wav'))
+        # load spritesheet image
+        img_dir = path.join(self.dir, 'img')
+        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        # load sound
+        self.snd_dir = path.join(self.dir, 'snd')
+        self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump33.wav'))
 
 
     def new(self):
@@ -48,10 +44,12 @@ class Game:
             p = Platform(self, *plat)
             self.all_sprite.add(p)
             self.platform.add(p)
+        pg.mixer.music.load(path.join(self.snd_dir, 'Grassy World (8-Bit_Orchestral Overture) - Main Title Theme.mp3'))
         self.run()
 
     def run(self):
         # game loop
+        pg.mixer.music.play(loops = -1)
         self.clock.tick(FPS)
         self.playing = True
         while self.playing:
@@ -59,6 +57,7 @@ class Game:
             self.event()
             self.update()
             self.draw()
+        pg.mixer.music.fadeout(500)
 
     def update(self):
         # game loop - update
@@ -67,8 +66,16 @@ class Game:
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platform, False)
             if hits:
-                self.player.pos.y = hits[0].rect.top
-                self.player.vel.y = 0
+                lowest = hits[0]
+                for hit in hits:
+                    if hit.rect.bottom > lowest.rect.bottom:
+                        lowest = hit
+                if self.player.pos.x < lowest.rect.right and self.player.pos.x > lowest.rect.left:
+                    if self.player.pos.y < lowest.rect.centery:
+                        self.player.pos.y = lowest.rect.top
+                        self.player.vel.y = 0
+                        self.player.jumping = False
+
         # if player reach top 1/4 of screen
         if self.player.rect.top <= HEIGHT / 4:
             self.player.pos.y += max(abs(self.player.vel.y), 2)
@@ -104,7 +111,7 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
-                    self.jump_sound.play()
+                    # self.jump_sound.play()
             if event.type == pg.KEYUP:
                 if event.key == pg.K_SPACE:
                     self.player.jump_cut()
@@ -120,6 +127,8 @@ class Game:
 
     def show_start_screen(self):
         # game over/control
+        pg.mixer.music.load(path.join(self.snd_dir, 'happy.mp3'))
+        pg.mixer.music.play(loops = -1)
         self.screen.fill(BGCOLOR)
         self.draw_text(TITLE, 48, WHITE, WIDTH / 2, HEIGHT / 4)
         self.draw_text("Arrows to move, Space to jump", 22, WHITE, WIDTH / 2, HEIGHT / 2)
@@ -127,6 +136,7 @@ class Game:
         self.draw_text("High score: " + str(self.highscore), 22, WHITE, WIDTH / 2, 15)
         pg.display.flip()
         self.wait_for_key()
+        pg.mixer.music.fadeout(500)
 
     def show_go_screen(self):
         if not self.running:
