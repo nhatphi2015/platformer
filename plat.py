@@ -31,7 +31,7 @@ class Game:
         # load sound
         self.snd_dir = path.join(self.dir, 'snd')
         self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump33.wav'))
-
+        self.boost_sound = pg.mixer.Sound(path.join(self.snd_dir, 'PowerUp9.wav'))
 
     def new(self):
         # start a game
@@ -87,6 +87,14 @@ class Game:
                     plat.kill()
                     self.score += 10
 
+        # if player hit powerup
+        pow_hits = pg.sprite.spritecollide(self.player, self.powerups, True)
+        for pow in pow_hits:
+            if pow.type == 'boost':
+                self.boost_sound.play()
+                self.player.vel.y = -BOOST_POWER
+                self.player.jumping = False
+
         # die!
         if self.player.rect.bottom > HEIGHT:
             for sprite in self.all_sprite:
@@ -98,7 +106,7 @@ class Game:
         # spawn new platform to keep same average number
         while len(self.platform) < 6:
             width = random.randrange(50, 100)
-            Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
+            Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -30))
             # p = Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
             # self.platform.add(p)
             # self.all_sprite.add(p)

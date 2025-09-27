@@ -1,6 +1,6 @@
 import pygame as pg
 from setting import *
-from random import choice
+from random import choice, randrange
 vec = pg.math.Vector2
 
 class Spritesheet:
@@ -123,21 +123,23 @@ class Platform(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        if randrange(100) < POW_SPAWN_PCT:
+            Pow(self.game, self)
 
-    class Pow(pg.sprite.Sprite):
-        def __init__(self, game, plat):
-            self.group = game.all_sprite, game.powerups
-            pg.sprite.Sprite.__init__(self, self.group)
-            self.game = game
-            self.plat = plat
-            self.type = choice(['boost'])
-            self.image = self.game.spritesheet.get_image(820, 1805, 71, 70)
-            self.image.set_colorkey(BLACK)
-            self.rect = self.image.get_rect()
-            self.rect.centerx = self.plat.rect.centerx
-            self.rect.bottom = self.plat.rect.top -5
+class Pow(pg.sprite.Sprite):
+    def __init__(self, game, plat):
+        self.group = game.all_sprite, game.powerups
+        pg.sprite.Sprite.__init__(self, self.group)
+        self.game = game
+        self.plat = plat
+        self.type = choice(['boost'])
+        self.image = self.game.spritesheet.get_image(820, 1805, 71, 70)
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = self.plat.rect.centerx
+        self.rect.bottom = self.plat.rect.top -5
 
-        def update(self):
-            self.rect.bottom = self.plat.rect.top -5
-            if not self.game.platform.has(self.plat):
-                self.kill()
+    def update(self):
+        self.rect.bottom = self.plat.rect.top -5
+        if not self.game.platform.has(self.plat):
+            self.kill()
