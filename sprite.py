@@ -1,6 +1,6 @@
 import pygame as pg
 from setting import *
-import random
+from random import choice, randrange
 vec = pg.math.Vector2
 
 class Spritesheet:
@@ -18,7 +18,8 @@ class Spritesheet:
 
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
-        pg.sprite.Sprite.__init__(self)
+        self.group = game.all_sprite
+        pg.sprite.Sprite.__init__(self, self.group)
         self.game = game
         self.walking = False
         self.jumping = False
@@ -27,8 +28,8 @@ class Player(pg.sprite.Sprite):
         self.load_image()
         self.image = self.standing_frame[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2) 
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.rect.center = (40, HEIGHT - 100) 
+        self.pos = vec(40, HEIGHT - 100)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -46,12 +47,18 @@ class Player(pg.sprite.Sprite):
         self.jump_frame = self.image = self.game.spritesheet.get_image(416, 1660, 150, 181)
         self.jump_frame.set_colorkey(BLACK)
 
+    def jump_cut(self):
+        if self.jumping:
+            if self.vel.y < -3:
+                self.vel.y = -3
+
     def jump(self):
         # jump only stand on the platform
-        self.rect.x += 1
+        self.rect.y += 2
         hits = pg.sprite.spritecollide(self, self.game.platform, False)
-        self.rect.x -= 1
-        if hits:
+        self.rect.y -= 2
+        if hits and not self.jumping:
+            self.game.jump_sound.play()
             self.vel.y = -PLAYER_JUMP
 
     def update(self):
@@ -107,11 +114,32 @@ class Player(pg.sprite.Sprite):
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, game, x, y):
-        pg.sprite.Sprite.__init__(self)
+        self.group = game.all_sprite, game.platform
+        pg.sprite.Sprite.__init__(self, self.group)
         self.game = game
         image = [self.game.spritesheet.get_image(0, 288, 380, 94), self.game.spritesheet.get_image(213, 1662, 201, 100)]
-        self.image = random.choice(image)
+        self.image = choice(image)
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        if randrange(100) < POW_SPAWN_PCT:
+            Pow(self.game, self)
+
+class Pow(pg.sprite.Sprite):
+    def __init__(self, game, plat):
+        self.group = game.all_sprite, game.powerups
+        pg.sprite.Sprite.__init__(self, self.group)
+        self.game = game
+        self.plat = plat
+        self.type = choice(['boost'])
+        self.image = self.game.spritesheet.get_image(820, 1805, 71, 70)
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = self.plat.rect.centerx
+        self.rect.bottom = self.plat.rect.top -5
+
+    def update(self):
+        self.rect.bottom = self.plat.rect.top -5
+        if not self.game.platform.has(self.plat):
+            self.kill()
