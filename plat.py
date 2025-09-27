@@ -38,12 +38,14 @@ class Game:
         self.score = 0
         self.all_sprite = pg.sprite.Group()
         self.platform = pg.sprite.Group()
+        self.powerups = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprite.add(self.player)
         for plat in PLATFORM_LIST:
-            p = Platform(self, *plat)
-            self.all_sprite.add(p)
-            self.platform.add(p)
+            Platform(self, *plat)
+            # p = Platform(self, *plat)
+            # self.all_sprite.add(p)
+            # self.platform.add(p)
         pg.mixer.music.load(path.join(self.snd_dir, 'Grassy World (8-Bit_Orchestral Overture) - Main Title Theme.mp3'))
         self.run()
 
@@ -96,9 +98,10 @@ class Game:
         # spawn new platform to keep same average number
         while len(self.platform) < 6:
             width = random.randrange(50, 100)
-            p = Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
-            self.platform.add(p)
-            self.all_sprite.add(p)
+            Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
+            # p = Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
+            # self.platform.add(p)
+            # self.all_sprite.add(p)
 
     def event(self):
         # game loop - event
