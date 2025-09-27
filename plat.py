@@ -31,19 +31,21 @@ class Game:
         # load sound
         self.snd_dir = path.join(self.dir, 'snd')
         self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump33.wav'))
-
+        self.boost_sound = pg.mixer.Sound(path.join(self.snd_dir, 'PowerUp9.wav'))
 
     def new(self):
         # start a game
         self.score = 0
         self.all_sprite = pg.sprite.Group()
         self.platform = pg.sprite.Group()
+        self.powerups = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprite.add(self.player)
         for plat in PLATFORM_LIST:
-            p = Platform(self, *plat)
-            self.all_sprite.add(p)
-            self.platform.add(p)
+            Platform(self, *plat)
+            # p = Platform(self, *plat)
+            # self.all_sprite.add(p)
+            # self.platform.add(p)
         pg.mixer.music.load(path.join(self.snd_dir, 'Grassy World (8-Bit_Orchestral Overture) - Main Title Theme.mp3'))
         self.run()
 
@@ -85,6 +87,14 @@ class Game:
                     plat.kill()
                     self.score += 10
 
+        # if player hit powerup
+        pow_hits = pg.sprite.spritecollide(self.player, self.powerups, True)
+        for pow in pow_hits:
+            if pow.type == 'boost':
+                self.boost_sound.play()
+                self.player.vel.y = -BOOST_POWER
+                self.player.jumping = False
+
         # die!
         if self.player.rect.bottom > HEIGHT:
             for sprite in self.all_sprite:
@@ -96,9 +106,10 @@ class Game:
         # spawn new platform to keep same average number
         while len(self.platform) < 6:
             width = random.randrange(50, 100)
-            p = Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
-            self.platform.add(p)
-            self.all_sprite.add(p)
+            Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -30))
+            # p = Platform(self, random.randrange(0, WIDTH - width),random.randrange(-75, -50))
+            # self.platform.add(p)
+            # self.all_sprite.add(p)
 
     def event(self):
         # game loop - event
