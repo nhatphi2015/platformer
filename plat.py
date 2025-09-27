@@ -92,7 +92,7 @@ class Game:
         for pow in pow_hits:
             if pow.type == 'boost':
                 self.boost_sound.play()
-                self.player.vel.y = -BOOST_POWER
+                self.player.vel.y = -
                 self.player.jumping = False
 
         # die!
