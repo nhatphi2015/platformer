@@ -28,6 +28,10 @@ class Game:
         # load spritesheet image
         img_dir = path.join(self.dir, 'img')
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        # Cloud
+        self.cloud_image = []
+        # for i in range(1, 4):
+            # self.cloud_image(pg.image.load(path.join(img_dir, 'cloud{}.png'.format)).convert())
         # load sound
         self.snd_dir = path.join(self.dir, 'snd')
         self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump33.wav'))
@@ -36,16 +40,16 @@ class Game:
     def new(self):
         # start a game
         self.score = 0
-        self.all_sprite = pg.sprite.Group()
+        self.all_sprite = pg.sprite.LayeredUpdates()
         self.platform = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
+        self.mob = pg.sprite.Group()
+        self.cloud = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprite.add(self.player)
         for plat in PLATFORM_LIST:
             Platform(self, *plat)
-            # p = Platform(self, *plat)
-            # self.all_sprite.add(p)
-            # self.platform.add(p)
+        self.mob_timer = 0
         pg.mixer.music.load(path.join(self.snd_dir, 'Grassy World (8-Bit_Orchestral Overture) - Main Title Theme.mp3'))
         self.run()
 
@@ -64,6 +68,15 @@ class Game:
     def update(self):
         # game loop - update
         self.all_sprite.update()
+        # spawn a mob 
+        now = pg.time.get_ticks()
+        if now - self.mob_timer > 5000 + random.choice([-1000, -500, 0, 500, 1000]):
+            self.mob_timer = now
+            Mob(self)
+        # hit mob
+        mob_hits = pg.sprite.spritecollide(self.player, self.mob, False, pg.sprite.collide_mask)
+        if mob_hits:
+            self.playing = False
         # check if player hit hits - only it falling
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platform, False)
@@ -81,6 +94,8 @@ class Game:
         # if player reach top 1/4 of screen
         if self.player.rect.top <= HEIGHT / 4:
             self.player.pos.y += max(abs(self.player.vel.y), 2)
+            for mob in self.mob:
+                mob.rect.y += max(abs(self.player.vel.y), 2)
             for plat in self.platform:
                 plat.rect.y += max(abs(self.player.vel.y), 2)
                 if plat.rect.top >= HEIGHT:
@@ -131,7 +146,6 @@ class Game:
         # game loop - draw
         self.screen.fill(LIGHTBLUE)
         self.all_sprite.draw(self.screen)
-        self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, WHITE, WIDTH /2, 15)
         # after draw finish - fill the display
         pg.display.flip()
